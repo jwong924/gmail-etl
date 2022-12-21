@@ -20,7 +20,7 @@ def main():
     msgs = []
     nextPageToken = ''
     r = json.loads(resources.get_list(nextPageToken))
-    print(r)
+    #print(r)
     today = datetime.datetime.today().strftime('%Y-%m-%d')
     print(today)
 
@@ -51,7 +51,8 @@ def main():
         nextPageToken = r['nextPageToken']
         print(nextPageToken)
         r = json.loads(resources.get_list('?pageToken='+nextPageToken))
-
+    conn.commit()
+    conn.close()
     print('Queried '+str(len(msgs))+' Emails')
     pathlib.Path('./output/raw').mkdir(parents=True,exist_ok=True)
     json_output_name = './output/raw/raw-'+timestamp+'.json'
