@@ -24,14 +24,14 @@ def main():
         #sys.exit()
 
     msgs = []
-
     # Initial run
+    print('Querying first page of emails')
     msgs = msgs + resources.get_msgs(msg_list)
 
     # Set page processing limit
     count = 1
     limit = 5
-    page = 1
+    page = 2
     upper_limit = 100
     # Ongoing Runs
     while count < limit and page < upper_limit:
