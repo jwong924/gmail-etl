@@ -20,6 +20,7 @@ def main():
         if pageToken_json['statusCode'] == 404:
             print('creating pageToken_list.json')
             resources.write_file([],'pageToken_list.json')
+            pageToken_json = []
         #sys.exit()
 
     msgs = []
