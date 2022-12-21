@@ -62,8 +62,8 @@ def main():
             msg_list=json.loads(resources.get_list('?pageToken='+nextPageToken['nextPageToken']))
         runs += 1
     #print(runs)
-    json_output_name = 'output/raw/raw-'+timestamp+'.json'
-    pathlib.Path('/output/raw').mkdir(parents=True,exist_ok=True)
+    pathlib.Path('./output/raw').mkdir(parents=True,exist_ok=True)
+    json_output_name = './output/raw/raw-'+timestamp+'.json'
     print('Writing: '+json_output_name)
     resources.write_file(msgs,json_output_name)
     print('Updating pageToken_json.json list')
