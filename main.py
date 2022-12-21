@@ -3,6 +3,7 @@ import datetime
 import sys
 import resources
 
+
 def main():
     print('running script!')
     timestamp=str(datetime.datetime.now().strftime("%Y-%m-%dT%H%M%S"))

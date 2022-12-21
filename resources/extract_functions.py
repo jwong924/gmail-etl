@@ -2,9 +2,7 @@ import requests
 import json
 import base64 as base64
 from bs4 import BeautifulSoup as BeautifulSoup
-from resources.get_creds import get_creds
-from googleapiclient.discovery import build
-
+from resources.get_token import get_token
 
 # Query into completed pages
 def find_item(key,value,content):
@@ -17,9 +15,18 @@ def find_item(key,value,content):
   
 # Get a list of emails by page
 def get_list(query):
-    creds = get_creds()
-    service = build('gmail','v1',credentials=creds)
-    r = service.users(userId='me').messages().list().execute()
+    try:
+        with open('token.json') as file:
+            token = json.load(file)['token']
+        headers = {'Authorization':'Bearer '+token}
+    except:
+        token = json.loads(get_token())['token']
+    r = requests.get('https://gmail.googleapis.com/gmail/v1/users/me/messages'+query, headers=headers)
+    if r.status_code != 200:
+        token = json.loads(get_token())['token']
+        headers = {'Authorization':'Bearer '+token}
+        r = requests.get('https://gmail.googleapis.com/gmail/v1/users/me/messages'+query, headers=headers)
+    return r.text
 
 # Get msg details
 def get_msg(id):
