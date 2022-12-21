@@ -1,50 +1,41 @@
-from __future__ import print_function
-
-import os.path
-
-from google.auth.transport.requests import Request
+from google.oauth2 import service_account
 from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+from google.auth.transport.requests import Request
+import os
 
-# If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
+SERVICE_ACCOUNT_FILE = 'jonpi_service_account.json'
 
 def get_token():
-    """Shows basic usage of the Gmail API.
-    Lists the user's Gmail labels.
-    """
     creds = None
-    # The file token.json stores the user's access and refresh tokens, and is
-    # created automatically when the authorization flow completes for the first
-    # time.
+    # Use token if exists
     if os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
-    # If there are no (valid) credentials available, let the user log in.
+            creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+    # If there are no (valid) credentials available, create token with service account
     if not creds or not creds.valid:
+        # If credentials exist, refresh token
         if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
+                creds.refresh(Request())
+        # Create new token.json file with service account credentials
         else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                'credentials.json', SCOPES)
-            creds = flow.run_local_server(port=0)
-        # Save the credentials for the next run
-        with open('token.json', 'w') as token:
-            token.write(creds.to_json())
-
+            creds = service_account.Credentials.from_service_account_file(
+                filename=SERVICE_ACCOUNT_FILE,
+                scopes=SCOPES
+            )
+            with open('token.json', 'w') as token:
+                token.write(creds.to_json())
     try:
         # Call the Gmail API
         service = build('gmail', 'v1', credentials=creds)
-        results = service.users().labels().list(userId='me').execute()
-        labels = results.get('labels', [])
+        response = service.users().getProfile(userId='me').execute()
+        print(response)
 
-        if not labels:
-            print('No labels found.')
-            #return
-        #print('Labels:'+str(labels))
 
     except HttpError as error:
         # TODO(developer) - Handle errors from gmail API.
         print(f'An error occurred: {error}')
+        
     return creds.to_json()
+
