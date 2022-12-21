@@ -43,15 +43,6 @@ def get_msg(id):
         r = requests.get('https://gmail.googleapis.com/gmail/v1/users/me/messages/'+id, headers=headers)
     return r.text
 
-# Loop through Msg List items
-def get_msgs(msg_list):
-    msgs = []
-    for item in msg_list['messages']:
-        try:
-            msgs.append(get_msg(item['id']))
-        except:
-            print('error: '+ str(item['id']))
-    return msgs
 # Find JSON values by key
 def find_values(key, json_repr):
     results=[]
