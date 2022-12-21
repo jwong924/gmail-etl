@@ -1,8 +1,8 @@
 import json
 import datetime
-import sys
+import pathlib
+#import sys
 import resources
-
 
 def main():
     print('running script!')
@@ -20,7 +20,7 @@ def main():
         if pageToken_json['statusCode'] == 404:
             print('creating pageToken_list.json')
             resources.write_file([],'pageToken_list.json')
-        sys.exit()
+        #sys.exit()
 
     msgs = []
 
@@ -63,6 +63,7 @@ def main():
         runs += 1
     #print(runs)
     json_output_name = 'output/raw/raw-'+timestamp+'.json'
+    pathlib.Path('/output/raw').mkdir(parents=True,exist_ok=True)
     print('Writing: '+json_output_name)
     resources.write_file(msgs,json_output_name)
     print('Updating pageToken_json.json list')
