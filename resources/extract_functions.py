@@ -66,6 +66,7 @@ def find_values(key, json_repr):
 
 # Read a file
 def read_file(file):
+    print('reading: '+file)
     try:
         with open(file,'r') as file:
             content = file.read()
