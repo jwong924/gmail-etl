@@ -25,8 +25,9 @@ def get_token():
                 filename=SERVICE_ACCOUNT_FILE,
                 scopes=SCOPES
             )
-            with open('token.json', 'w') as token:
-                token.write(creds.to_json())
+            print(creds)
+        with open('token.json', 'w') as token:
+            token.write(json.loads(creds))
     try:
         # Call the Gmail API
         service = build('gmail', 'v1', credentials=creds)
@@ -38,5 +39,4 @@ def get_token():
         # TODO(developer) - Handle errors from gmail API.
         print(f'An error occurred: {error}')
         
-    return creds.to_json()
-
+    return json.loads(creds)
