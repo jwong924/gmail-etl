@@ -31,10 +31,11 @@ def main():
     # Set page processing limit
     count = 1
     limit = 5
-    runs = 0
+    page = 1
     upper_limit = 100
     # Ongoing Runs
-    while count < limit and runs < upper_limit:
+    while count < limit and page < upper_limit:
+        print('Query page: '+str(page))
         # Set format for nextPageTokens
         nextPageToken = {
             'date': str(datetime.date.today()),
@@ -61,8 +62,7 @@ def main():
         else: 
             print('page has been queried')
             msg_list=json.loads(resources.get_list('?pageToken='+nextPageToken['nextPageToken']))
-        runs += 1
-    #print(runs)
+        page += 1
     pathlib.Path('./output/raw').mkdir(parents=True,exist_ok=True)
     json_output_name = './output/raw/raw-'+timestamp+'.json'
     print('Writing: '+json_output_name)
