@@ -31,7 +31,7 @@ def main():
         for item in r['messages']:
             response = None
             item_id = str(item['id'])
-            cursor.execute('select * from processedEmails WHERE id=?',(item_id,))
+            cursor.execute('select * from emails WHERE id=?',(item_id,))
             response = cursor.fetchone()
             if response:
                 print(item['id'] +' has been queried with results: '+str(response))
@@ -43,13 +43,13 @@ def main():
                     print('adding '+item['id']+' to db')
                     cursor.execute(
                     '''
-                    insert into processedEmails (id,date) values (?,?) 
+                    insert into emails (id,date) values (?,?) 
                     ''',(item_id,today))
                     count+=1
                 except Exception as e:
                     print(item['id']+' had an error: '+e)
         nextPageToken = r['nextPageToken']
-        print(nextPageToken)
+        print('********** next page token: '+str(nextPageToken)+' **********')
         r = json.loads(resources.get_list('?pageToken='+nextPageToken))
     conn.commit()
     conn.close()
