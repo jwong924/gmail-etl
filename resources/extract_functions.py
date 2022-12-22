@@ -43,17 +43,7 @@ def get_msg(id):
         r = requests.get('https://gmail.googleapis.com/gmail/v1/users/me/messages/'+id, headers=headers)
     return r.text
 
-# Find JSON values by key
-def find_values(key, json_repr):
-    results=[]
-    def _decode_dict(a_dict):
-        try:
-            results.append(a_dict[key])
-        except KeyError:
-            pass
-        return a_dict
-    json.loads(json_repr, object_hook=_decode_dict)
-    return results
+
 
 # Read a file
 def read_file(file):
