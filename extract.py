@@ -13,7 +13,7 @@ def main():
             user=os.environ.get("MYSQL_USER"),
             password=os.environ.get("MYSQL_PASSWORD"),
             host=os.environ.get("MYSQL_HOST"),
-            port=os.environ.get("MYSQL_PORT"),
+            port=int(os.environ.get("MYSQL_PORT")),
             database='gmail'
         )
         cursor = conn.cursor()
