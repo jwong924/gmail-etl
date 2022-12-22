@@ -3,6 +3,18 @@ import dateutil.parser
 import base64 as base64
 from bs4 import BeautifulSoup as BeautifulSoup
 
+# Find JSON values by key
+def find_values(key, json_repr):
+    results=[]
+    def _decode_dict(a_dict):
+        try:
+            results.append(a_dict[key])
+        except KeyError:
+            pass
+        return a_dict
+    json.loads(json_repr, object_hook=_decode_dict)
+    return results
+
 #Format date from string
 def format_date(date):
     return dateutil.parser.parse(date).strftime('%D %H:%M:%S')
