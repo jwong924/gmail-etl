@@ -30,7 +30,7 @@ def main():
                 formatted_msg.update(resources.extract_linkedin(item))
             formatted_msgs.append(formatted_msg)
         # Write formatted_msgs to ./output/stage/staged directory
-        print(f('writing formatted output of {filename} to stage directory'))
+        print(f'writing formatted output of {filename} to stage directory')
         resources.write_file(formatted_msgs,stage_path+filename)
         # Move raw files to processed directory
         print(f'moving {filename} to processed directory')
