@@ -58,6 +58,7 @@ def main():
     json_output_name = './output/raw/raw-'+timestamp+'.json'
     print('Writing: '+json_output_name)
     resources.write_file(msgs,json_output_name)
+    return json_output_name
 
 if __name__ == '__main__':
     main()
