@@ -4,17 +4,22 @@ import pathlib
 import resources
 import mariadb
 import sys
+import os
 
 def main():
     print('running script!')
     try:
-        with open('mariadb_conn.json') as file:
-            mariadb_params = json.loads(file.read())
-        conn = mariadb.connect(**mariadb_params)
+        conn = mariadb.connect(
+            user=os.environ.get("MYSQL_USER"),
+            password=os.environ.get("MYSQL_PASSWORD"),
+            host=os.environ.get("MYSQL_HOST"),
+            port=os.environ.get("MYSQL_PORT"),
+            database='gmail'
+        )
         cursor = conn.cursor()
-    except Exception as e:
-        print('Exception error trying to connect to mariadb: '+e)
-        sys.exit()
+    except mariadb.Error as e:
+        print(f'Exception error trying to connect to mariadb: {e}')
+        sys.exit(1)
 
     timestamp=str(datetime.datetime.now().strftime("%Y-%m-%dT%H%M%S"))
     msgs = []
@@ -31,7 +36,7 @@ def main():
         for item in r['messages']:
             response = None
             item_id = str(item['id'])
-            cursor.execute('select * from emails WHERE id=?',(item_id,))
+            cursor.execute('select * from email WHERE id=?',(item_id,))
             response = cursor.fetchone()
             if response:
                 print(item['id'] +' has been queried with results: '+str(response))
@@ -43,7 +48,7 @@ def main():
                     print('adding '+item['id']+' to db')
                     cursor.execute(
                     '''
-                    insert into emails (id,date) values (?,?) 
+                    insert into email (id,date) values (?,?) 
                     ''',(item_id,today))
                     count+=1
                 except Exception as e:
@@ -55,7 +60,7 @@ def main():
     conn.close()
     print('Queried '+str(len(msgs))+' Emails')
     pathlib.Path('./output/raw').mkdir(parents=True,exist_ok=True)
-    json_output_name = './output/raw/raw-'+timestamp+'.json'
+    json_output_name = './output/raw/'+timestamp+'-'+str(len(msgs))+'.json'
     print('Writing: '+json_output_name)
     resources.write_file(msgs,json_output_name)
     return json_output_name
