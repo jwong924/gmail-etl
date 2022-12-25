@@ -41,7 +41,7 @@ def main():
         for item in r['messages']:
             response = None
             item_id = str(item['id'])
-            cursor.execute('select * from emails WHERE id=?',(item_id,))
+            cursor.execute('select * from emails WHERE id=%s',(item_id,))
             response = cursor.fetchone()
             if response:
                 print(item['id'] +' has been queried with results: '+str(response))
@@ -53,7 +53,7 @@ def main():
                     print('adding '+item['id']+' to db')
                     cursor.execute(
                     '''
-                    insert into emails (id,date) values (?,?) 
+                    insert into emails (id,date) values (%s,%s) 
                     ''',(item_id,today))
                     count+=1
                 except Exception as e:
