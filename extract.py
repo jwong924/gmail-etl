@@ -2,22 +2,27 @@ import json
 import datetime
 import pathlib
 import resources
-import mariadb
+import psycopg2
 import sys
 import os
+
+#POSTGRESQL_HOST=127.0.0.1
+#export POSTGRESQL_PORT=55432
+#export POSTGRESQL_USER='gmail_user'
+#export POSTGRESQL_PASSWORD='Gmail$123'
 
 def main():
     print('running script!')
     try:
-        conn = mariadb.connect(
+        conn = psycopg2.connect(
             user=os.environ.get("MYSQL_USER"),
-            password=os.environ.get("MYSQL_PASSWORD"),
-            host=os.environ.get("MYSQL_HOST"),
-            port=int(os.environ.get("MYSQL_PORT")),
+            password=os.environ.get("POSTGRESQL_PASSWORD"),
+            host=os.environ.get("POSTGRESQL_HOST"),
+            port=int(os.environ.get("POSTGRESQL_PORT")),
             database='gmail'
         )
         cursor = conn.cursor()
-    except mariadb.Error as e:
+    except psycopg2.Error as e:
         print(f'Exception error trying to connect to mariadb: {e}')
         sys.exit(1)
 
@@ -36,7 +41,7 @@ def main():
         for item in r['messages']:
             response = None
             item_id = str(item['id'])
-            cursor.execute('select * from email WHERE id=?',(item_id,))
+            cursor.execute('select * from emails WHERE id=?',(item_id,))
             response = cursor.fetchone()
             if response:
                 print(item['id'] +' has been queried with results: '+str(response))
@@ -48,7 +53,7 @@ def main():
                     print('adding '+item['id']+' to db')
                     cursor.execute(
                     '''
-                    insert into email (id,date) values (?,?) 
+                    insert into emails (id,date) values (?,?) 
                     ''',(item_id,today))
                     count+=1
                 except Exception as e:
