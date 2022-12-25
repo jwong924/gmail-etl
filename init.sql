@@ -12,17 +12,17 @@ GRANT ALL PRIVILEGES ON gmail.* TO 'gmail_user'@'localhost' ;
 
 USE auth;
 
-CREATE TABLE IF NOT EXISTS user (
+CREATE TABLE IF NOT EXISTS users (
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL
 );
 
-INSERT INTO user (username, password) VALUES ('test','Admin$123');
+INSERT INTO users (username, password) VALUES ('test','Admin$123');
 
 USE gmail;
 
-CREATE TABLE IF NOT EXISTS email (
+CREATE TABLE IF NOT EXISTS emails (
     id VARCHAR(255) NOT NULL PRIMARY KEY,
     date date
 );

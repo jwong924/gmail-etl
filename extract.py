@@ -7,7 +7,7 @@ import sys
 import os
 
 #POSTGRESQL_HOST=127.0.0.1
-#export POSTGRESQL_PORT=55432
+#export POSTGRESQL_PORT=5432 
 #export POSTGRESQL_USER='gmail_user'
 #export POSTGRESQL_PASSWORD='Gmail$123'
 
@@ -15,15 +15,15 @@ def main():
     print('running script!')
     try:
         conn = psycopg2.connect(
-            user=os.environ.get("MYSQL_USER"),
+            user=os.environ.get("POSTGRESQL_USER"),
             password=os.environ.get("POSTGRESQL_PASSWORD"),
             host=os.environ.get("POSTGRESQL_HOST"),
             port=int(os.environ.get("POSTGRESQL_PORT")),
-            database='gmail'
+            dbname='gmail'
         )
         cursor = conn.cursor()
     except psycopg2.Error as e:
-        print(f'Exception error trying to connect to mariadb: {e}')
+        print(f'Exception error trying to connect to postgresql server: {e}')
         sys.exit(1)
 
     timestamp=str(datetime.datetime.now().strftime("%Y-%m-%dT%H%M%S"))
