@@ -17,7 +17,11 @@ def find_values(key, json_repr):
 
 #Format date from string
 def format_date(date):
-    return dateutil.parser.parse(date).strftime('%D %H:%M:%S')
+    try:
+        formatted_date = dateutil.parser.parse(date).strftime('%D %H:%M:%S')
+    except ValueError:
+         formatted_date = dateutil.parser.parse(date,fuzzy=True).strftime('%D %H:%M:%S')
+    return formatted_date
 
 # Standard transform and extract common metadata
 def standard_transform_msg(msg):
