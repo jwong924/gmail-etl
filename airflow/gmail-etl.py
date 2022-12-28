@@ -119,7 +119,7 @@ def write_raw(data):
         storage_client = storage.Client()
         bucket = storage_client.get_bucket('gmail-etl')
         blob = bucket.blob('raw/'+str(timestamp)+'.json')
-        blob.open('w').write(data)
+        blob.open('w').write(json.dumps(data,indent=4))
         conn.commit()
     except Exception as e:
         print(e)
