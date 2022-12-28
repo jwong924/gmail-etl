@@ -26,8 +26,7 @@ def db_auth():
             port=int(os.environ.get("POSTGRESQL_PORT")),
             dbname='gmail'
         )
-        cursor = conn.cursor()
-        return cursor
+        return conn
     except psycopg2.Error as e:
         print(f'Exception error trying to connect to postgresql server: {e}')
         sys.exit(1)
