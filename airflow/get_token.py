@@ -36,13 +36,12 @@ def get_token():
         service = build('gmail', 'v1', credentials=creds)
         results = service.users().labels().list(userId='me').execute()
         labels = results.get('labels', [])
-
-        if not labels:
-            print('No labels found.')
-            #return
         print('Labels:'+str(labels))
 
     except HttpError as error:
         # TODO(developer) - Handle errors from gmail API.
         print(f'An error occurred: {error}')
     return creds.to_json()
+
+if __name__ == '__main__':
+    get_token()
