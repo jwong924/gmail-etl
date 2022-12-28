@@ -52,7 +52,6 @@ def extract():
         # Loop counter till limit
         while count <= limit:
             # Query Google API for List of emails at Page
-            print('Querying Google for Email List at page: ' + str(count))
             if nextPageToken:query='?pageToken='+str(nextPageToken)
             list_response = requests.get('https://gmail.googleapis.com/gmail/v1/users/me/messages'+query, headers=headers)
             print('Response Status Code: '+str(list_response.status_code))
@@ -80,9 +79,9 @@ def extract():
         print('Queried: '+str(len(msgs))+' Emails')
         pathlib.Path('./output/raw').mkdir(parents=True,exist_ok=True)
         json_output_name = './output/raw/'+timestamp+'-'+str(len(msgs))+'.json'
-        print('Writing result to: '+json_output_name)
         with open(json_output_name,'w') as file:
-            file.write(msgs,indent=4)
+            file.write(json.dumps(msgs,indent=4))
+        print('Writing result to: '+json_output_name)
     except Exception as e:
         print('Extract Function Error: '+str(e))
     finally:
