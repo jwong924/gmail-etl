@@ -44,6 +44,7 @@ def extract():
         # Set Google Auth Header
         print('Authorizing into Google API ...')
         headers = {'Authorization':'Bearer '+google_auth()}
+        print(headers)
         # Connect to DB
         print('Authorizing into local DB...')
         conn = db_auth()
