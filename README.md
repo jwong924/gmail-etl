@@ -12,6 +12,7 @@ export POSTGRESQL_PASSWORD='Gmail$123'
 
 
 # Airflow Commands
+https://airflow.apache.org/docs/apache-airflow/stable/start.html
 ```bash
 airflow db init
 airflow webserver --port 8080
