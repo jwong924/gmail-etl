@@ -42,8 +42,9 @@ def extract():
     limit=200 # Set limit of Email's to retrieve
     try:
         # Set Google Auth Header
-        print('Authorizing into Google API ...')
-        headers = {'Authorization':'Bearer '+google_auth()}
+        token = google_auth()
+        print('Authorizing into Google API with token' + google_auth())
+        headers = {'Authorization':'Bearer '+token}
         print(headers)
         # Connect to DB
         print('Authorizing into local DB...')
