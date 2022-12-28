@@ -40,7 +40,7 @@ def get_token():
         if not labels:
             print('No labels found.')
             #return
-        #print('Labels:'+str(labels))
+        print('Labels:'+str(labels))
 
     except HttpError as error:
         # TODO(developer) - Handle errors from gmail API.

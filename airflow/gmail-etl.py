@@ -2,7 +2,6 @@ import requests
 import json
 import datetime
 import psycopg2
-import pathlib
 import sys
 import os
 from google.cloud import storage # pip install google-cloud-storage
@@ -89,6 +88,7 @@ def extract():
 
 def write_raw(data):
     print(str(len(data))+' messages to write')
+    if not len(data) > 0: return 'No messages to write'
     timestamp=str(datetime.datetime.now().strftime("%Y-%m-%dT%H%M%S"))
     today = datetime.datetime.today().strftime('%Y-%m-%d')
     # Connect to local DB
