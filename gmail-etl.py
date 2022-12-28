@@ -52,18 +52,21 @@ def extract():
         cursor = conn.cursor()
         # Loop counter till limit
         while count <= limit:
-            # Query Google API
+            # Query Google API for List of emails at Page
+            if nextPageToken:query='pageToken='+str(nextPageToken)
             list_response = requests.get('https://gmail.googleapis.com/gmail/v1/users/me/messages'+query, headers=headers)
             list_response_json = json.loads(list_response.text)
-            if nextPageToken:query='pageToken='+str(nextPageToken)
+            # Loop through Message List for individual Messages
             for item in list_response_json['messages']:
                 item_id=str(item['id'])
+                # Query DB to check if messages have been queried already
                 cursor.execute(f'select * from emails where id={item_id}')
                 db_response = cursor.fetchone()
                 if db_response:
                     print(str(item['id'])+' has been queried with results: '+str(db_response))
                 else:
                     print(str(item['id'])+' has not been queried, adding item to db')
+                    # Query Googel API for individual message
                     msg_response = requests.get('https://gmail.googleapis.com/gmail/v1/users/me/messages/'+str(item['id']), headers=headers)
                     msgs.append(json.loads(msg_response.text))
                     cursor.execute(f'insert into emails (id,date) values ({item_id},{today})')
