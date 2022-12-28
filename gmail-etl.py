@@ -43,7 +43,7 @@ def extract():
     try:
         # Set Google Auth Header
         token = google_auth()
-        print('Authorizing into Google API with token' + token)
+        print('Authorizing into Google API with token '+token)
         headers = {'Authorization':'Bearer '+token}
         # Connect to DB
         print('Authorizing into local DB...')
@@ -61,7 +61,7 @@ def extract():
             for item in list_response_json['messages']:
                 item_id=str(item['id'])
                 # Query DB to check if messages have been queried already
-                cursor.execute(f'select * from emails where id={item_id}')
+                cursor.execute(f'select * from emails where id="{item_id}"')
                 db_response = cursor.fetchone()
                 if db_response:
                     print(str(item['id'])+' has been queried with results: '+str(db_response))
