@@ -38,7 +38,6 @@ def extract():
     msgs=[]
     nextPageToken=None
     query=''
-    if nextPageToken:query='pageToken='+str(nextPageToken)
     count=0
     limit=200 # Set limit of Email's to retrieve
     try:
