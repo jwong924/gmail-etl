@@ -80,7 +80,7 @@ def extract():
         #json_output_name = './output/raw/'+timestamp+'-'+str(len(msgs))+'.json'
         #with open(json_output_name,'w') as file:file.write(json.dumps(msgs,indent=4))
         #print('Writing result to: '+json_output_name)
-        conn.commit()
+        #conn.commit()
     except Exception as e:
         print('Extract Function Error: '+str(e))
     finally:
@@ -99,7 +99,7 @@ def write_raw(data):
         print('Error connecting to local DB ' + str(e))
         conn.close()
         return
-    """
+
     for item in data:
         item_id = str(item['id'])
         # Query DB to check if messages have been queried already
@@ -112,20 +112,23 @@ def write_raw(data):
         else:
             print(str('Adding '+item['id'])+' to local DB')
             cursor.execute(f"insert into emails (id,date) values ('{item_id}','{today}')")
-    """
     # Connect to Google Bucket
     os.environ['GOOGLE_APPLICATION_CREDENTIALS']='ServiceKey_GoogleCloud.json'
     try:
         storage_client = storage.Client()
         bucket = storage_client.get_bucket('gmail-etl')
-        blob = bucket.blob('raw/'+str(timestamp)+'.json')
+        blob_name = 'raw/'+str(timestamp)+'.json'
+        blob = bucket.blob(blob_name)
         blob.open('w').write(json.dumps(data,indent=4))
+        print(blob.open('r').read())
         conn.commit()
     except Exception as e:
-        print(e)
+        print('Error writing to Google Cloud Storage '+str(e))
         return
     finally:
         conn.close()
+    return 'File written to '+blob_name
 
 if __name__ == '__main__':
-    write_raw([{"test":"hello world"}])
+    msgs = extract()
+    write_raw(msgs)
