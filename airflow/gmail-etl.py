@@ -5,7 +5,8 @@ import psycopg2
 import pathlib
 import sys
 import os
-from resources.get_token import get_token
+from google.cloud import storage # pip install google-cloud-storage
+from get_token import get_token
 
 # Connect into Google API
 def google_auth():
@@ -33,13 +34,13 @@ def db_auth():
 
 # Extract Data from Gmail API
 def extract():
-    timestamp=str(datetime.datetime.now().strftime("%Y-%m-%dT%H%M%S"))
-    today = datetime.datetime.today().strftime('%Y-%m-%d')
+    #timestamp=str(datetime.datetime.now().strftime("%Y-%m-%dT%H%M%S"))
+    #today = datetime.datetime.today().strftime('%Y-%m-%d')
     msgs=[]
     nextPageToken=None
     query=''
     count=1
-    limit=200 # Set limit of Email's to retrieve
+    limit=500 # Set limit of Email's to retrieve
     try:
         # Set Google Auth Header
         token = google_auth()
@@ -65,27 +66,66 @@ def extract():
                 if db_response:
                     print(str(item['id'])+' has been queried with results: '+str(db_response))
                 else:
-                    print(str(item['id'])+' has not been queried, adding item to db')
+                    print(str(item['id'])+' has not been queried, adding item to array')
                     # Query Googel API for individual message
                     msg_response = requests.get('https://gmail.googleapis.com/gmail/v1/users/me/messages/'+str(item['id']), headers=headers)
                     msgs.append(json.loads(msg_response.text))
-                    cursor.execute(f"insert into emails (id,date) values ('{item_id}','{today}')")
+                    #cursor.execute(f"insert into emails (id,date) values ('{item_id}','{today}')")
                     count+=1
             # Set nextPageToken
             nextPageToken=list_response_json['nextPageToken']
             print('********** next page token: '+str(nextPageToken)+' **********')
-        conn.commit()
-
         print('Queried: '+str(len(msgs))+' Emails')
-        pathlib.Path('./output/raw').mkdir(parents=True,exist_ok=True)
-        json_output_name = './output/raw/'+timestamp+'-'+str(len(msgs))+'.json'
-        with open(json_output_name,'w') as file:
-            file.write(json.dumps(msgs,indent=4))
-        print('Writing result to: '+json_output_name)
+        #pathlib.Path('./output/raw').mkdir(parents=True,exist_ok=True)
+        #json_output_name = './output/raw/'+timestamp+'-'+str(len(msgs))+'.json'
+        #with open(json_output_name,'w') as file:file.write(json.dumps(msgs,indent=4))
+        #print('Writing result to: '+json_output_name)
+        conn.commit()
     except Exception as e:
         print('Extract Function Error: '+str(e))
     finally:
         conn.close()
+    return msgs
+
+def write_raw(data):
+    print(str(len(data))+' messages to write')
+    timestamp=str(datetime.datetime.now().strftime("%Y-%m-%dT%H%M%S"))
+    today = datetime.datetime.today().strftime('%Y-%m-%d')
+    # Connect to local DB
+    try:
+        conn = db_auth()
+        cursor = conn.cursor()
+    except Exception as e:
+        print('Error connecting to local DB ' + str(e))
+        conn.close()
+        return
+    """
+    for item in data:
+        item_id = str(item['id'])
+        # Query DB to check if messages have been queried already
+        cursor.execute(f"SELECT * FROM emails WHERE id = '{item_id}';")
+        db_response = cursor.fetchone()
+        if db_response:
+            print(str(item['id'])+' has been queried with results: '+str(db_response)+', removing from data array')
+            # Remove queried item from data array
+            data.remove(item)
+        else:
+            print(str('Adding '+item['id'])+' to local DB')
+            cursor.execute(f"insert into emails (id,date) values ('{item_id}','{today}')")
+    """
+    # Connect to Google Bucket
+    os.environ['GOOGLE_APPLICATION_CREDENTIALS']='ServiceKey_GoogleCloud.json'
+    try:
+        storage_client = storage.Client()
+        bucket = storage_client.get_bucket('gmail-etl')
+        blob = bucket.blob('raw/'+str(timestamp)+'.json')
+        blob.open('w').write(data)
+        conn.commit()
+    except Exception as e:
+        print(e)
+        return
+    finally:
+        conn.close()
 
 if __name__ == '__main__':
-    extract()
+    write_raw([{"test":"hello world"}])
