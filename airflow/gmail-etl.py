@@ -33,8 +33,6 @@ def db_auth():
 
 # Extract Data from Gmail API
 def extract():
-    #timestamp=str(datetime.datetime.now().strftime("%Y-%m-%dT%H%M%S"))
-    #today = datetime.datetime.today().strftime('%Y-%m-%d')
     msgs=[]
     nextPageToken=None
     query=''
@@ -69,17 +67,11 @@ def extract():
                     # Query Googel API for individual message
                     msg_response = requests.get('https://gmail.googleapis.com/gmail/v1/users/me/messages/'+str(item['id']), headers=headers)
                     msgs.append(json.loads(msg_response.text))
-                    #cursor.execute(f"insert into emails (id,date) values ('{item_id}','{today}')")
                     count+=1
             # Set nextPageToken
             nextPageToken=list_response_json['nextPageToken']
             print('********** next page token: '+str(nextPageToken)+' **********')
         print('Queried: '+str(len(msgs))+' Emails')
-        #pathlib.Path('./output/raw').mkdir(parents=True,exist_ok=True)
-        #json_output_name = './output/raw/'+timestamp+'-'+str(len(msgs))+'.json'
-        #with open(json_output_name,'w') as file:file.write(json.dumps(msgs,indent=4))
-        #print('Writing result to: '+json_output_name)
-        #conn.commit()
     except Exception as e:
         print('Extract Function Error: '+str(e))
     finally:
@@ -119,8 +111,7 @@ def write_raw(data):
         bucket = storage_client.get_bucket('gmail-etl')
         blob_name = 'raw/'+str(timestamp)+'.json'
         blob = bucket.blob(blob_name)
-        blob.open('w').write(json.dumps(data,indent=4))
-        print(blob.open('r').read())
+        blob.open('w').write(json.dumps(data))
         conn.commit()
     except Exception as e:
         print('Error writing to Google Cloud Storage '+str(e))
@@ -131,4 +122,5 @@ def write_raw(data):
 
 if __name__ == '__main__':
     msgs = extract()
-    write_raw(msgs)
+    if len(msgs) > 0:
+        write_raw(msgs)
