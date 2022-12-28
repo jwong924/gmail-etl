@@ -86,5 +86,5 @@ def extract():
     with open(json_output_name,'w') as file:
         file.write(msgs,indent=4)
 
-if __name__ == '__main':
+if __name__ == '__main__':
     extract()
