@@ -37,7 +37,7 @@ def extract():
     today = datetime.datetime.today().strftime('%Y-%m-%d')
     msgs=[]
     nextPageToken=None
-    query=None
+    query=''
     if nextPageToken:query='pageToken='+str(nextPageToken)
     count=0
     limit=200 # Set limit of Email's to retrieve
