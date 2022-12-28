@@ -38,7 +38,7 @@ def extract():
     msgs=[]
     nextPageToken=None
     query=''
-    count=0
+    count=1
     limit=200 # Set limit of Email's to retrieve
     try:
         # Set Google Auth Header
@@ -51,6 +51,7 @@ def extract():
         # Loop counter till limit
         while count <= limit:
             # Query Google API for List of emails at Page
+            print('Querying Google for Email List at page: ' + str(count))
             if nextPageToken:query='?pageToken='+str(nextPageToken)
             list_response = requests.get('https://gmail.googleapis.com/gmail/v1/users/me/messages'+query, headers=headers)
             list_response_json = json.loads(list_response.text)
