@@ -52,7 +52,7 @@ def extract():
         # Loop counter till limit
         while count <= limit:
             # Query Google API for List of emails at Page
-            if nextPageToken:query='pageToken='+str(nextPageToken)
+            if nextPageToken:query='?pageToken='+str(nextPageToken)
             list_response = requests.get('https://gmail.googleapis.com/gmail/v1/users/me/messages'+query, headers=headers)
             list_response_json = json.loads(list_response.text)
             # Loop through Message List for individual Messages
