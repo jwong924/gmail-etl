@@ -75,7 +75,7 @@ def extract():
             print('********** next page token: '+str(nextPageToken)+' **********')
         conn.commit()
     except Exception as e:
-        print('Extract Function Error: '+str(e)+ ' at line: '+str(sys.exc_info().tb_lineno))
+        print('Extract Function Error: '+str(e))
     finally:
         conn.close()
     print('Queried: '+str(len(msgs))+' Emails')
