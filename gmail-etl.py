@@ -54,6 +54,7 @@ def extract():
             print('Querying Google for Email List at page: ' + str(count))
             if nextPageToken:query='?pageToken='+str(nextPageToken)
             list_response = requests.get('https://gmail.googleapis.com/gmail/v1/users/me/messages'+query, headers=headers)
+            print('Response Status Code: '+str(list_response.status_code))
             list_response_json = json.loads(list_response.text)
             # Loop through Message List for individual Messages
             for item in list_response_json['messages']:
@@ -74,16 +75,17 @@ def extract():
             nextPageToken=list_response_json['nextPageToken']
             print('********** next page token: '+str(nextPageToken)+' **********')
         conn.commit()
+
+        print('Queried: '+str(len(msgs))+' Emails')
+        pathlib.Path('./output/raw').mkdir(parents=True,exist_ok=True)
+        json_output_name = './output/raw/'+timestamp+'-'+str(len(msgs))+'.json'
+        print('Writing result to: '+json_output_name)
+        with open(json_output_name,'w') as file:
+            file.write(msgs,indent=4)
     except Exception as e:
         print('Extract Function Error: '+str(e))
     finally:
         conn.close()
-    print('Queried: '+str(len(msgs))+' Emails')
-    pathlib.Path('./output/raw').mkdir(parents=True,exist_ok=True)
-    json_output_name = './output/raw/'+timestamp+'-'+str(len(msgs))+'.json'
-    print('Writing result to: '+json_output_name)
-    with open(json_output_name,'w') as file:
-        file.write(msgs,indent=4)
 
 if __name__ == '__main__':
     extract()
