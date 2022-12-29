@@ -86,6 +86,7 @@ def extract():
             list_response_json = json.loads(list_response.text)
             # Loop through Message List for individual Messages
             for item in list_response_json['messages']:
+                if count > limit: break
                 item_id=str(item['id'])
                 # Query DB to check if messages have been queried already
                 cursor.execute(f"SELECT * FROM emails WHERE id = '{item_id}';")
@@ -240,7 +241,7 @@ def write_stage_1(formatted_data):
     print(df.head())
     bucket_name = 'gmail-etl'
     blob_name = 'stage-1/'+str(timestamp)+'.csv'
-    write_to_gcs(df.to_csv(index=False, quoting=csv.QUOTE_NONNUMERIC),bucket_name,blob_name)
+    write_to_gcs(df.to_csv(index=False, quoting=csv.QUOTE_NONNUMERIC, encoding='utf-8-sig'),bucket_name,blob_name)
     return
 
 if __name__ == '__main__':
