@@ -77,11 +77,24 @@ def read_gcs_blob(bucket_name,blob_name):
         result = e
     return result
 
-def list_blobs(bucket_name,prefix):
+def list_gcs_blobs(bucket_name,prefix):
     os.environ['GOOGLE_APPLICATION_CREDENTIALS']='ServiceKey_GoogleCloud.json'
     storage_client = storage.Client()
     blobs = storage_client.list_blobs(bucket_name,prefix=prefix,delimiter='/')
     return blobs
+
+def move_gcs_blob(source_bucket_name, source_blob_name, destination_bucket_name, destination_blob_name):
+    os.environ['GOOGLE_APPLICATION_CREDENTIALS']='ServiceKey_GoogleCloud.json'
+    storage_client = storage.Client()
+    source_bucket = storage_client.bucket(source_bucket_name)
+    source_blob = source_bucket.blob(source_blob_name)
+    destination_bucket = storage_client.bucket(destination_bucket_name)
+    
+    blob_copy = source_bucket.copy_blob(
+        source_blob, destination_bucket, destination_blob_name
+    )
+    source_bucket.delete_blob(source_blob_name)
+    return blob_copy
 
 # Write data to Google Cloud Storage
 def write_raw(data):
@@ -227,13 +240,15 @@ def extract_linkedin(data):
 # Transform to Stage 1
 def transform_load_raw():
     timestamp=datetime.datetime.now().strftime("%Y-%m-%dT%H%M%S")
+    processed_blobs=[]
     raw_data = []
     formatted_data=[]
-    blobs = list_blobs('gmail-etl','raw/')
+    blobs = list_gcs_blobs('gmail-etl','raw/')
     for blob in blobs:
         try:
             print(blob.name)
             raw_data = raw_data + json.loads(read_gcs_blob('gmail-etl',blob.name))
+            processed_blobs.append(blob.name)
         except: pass
     for item in raw_data:
         print('Processing item: '+item['id'])
@@ -279,6 +294,9 @@ def transform_load_raw():
     r = write_to_gcs(df.to_csv(index=False, quoting=csv.QUOTE_NONNUMERIC, encoding='utf-8-sig'),bucket_name,blob_name)
     r = json.loads(r)
     if r['statusCode']==200:
+        for blob in processed_blobs:
+            blob_name = blob.split('/')[1]
+            move_gcs_blob('gmail-etl',blob,'gmail-etl','processed/'+blob_name)
         result = {
             "statusCode":200,
             "bucket":bucket_name,
