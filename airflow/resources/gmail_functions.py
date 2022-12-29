@@ -11,6 +11,7 @@ import csv
 from bs4 import BeautifulSoup as BeautifulSoup
 from google.cloud import storage # pip install google-cloud-storage
 from resources import get_token
+from airflow.decorators import task
 from airflow.hooks.base import BaseHook
 
 # Connect into Google API
@@ -62,6 +63,7 @@ def write_to_gcs(data,bucket_name,blob_name):
         return json.dumps({"StatusCode":400,"Error":"Error in writting to Google Cloud Storage"+str(e)},indent=4)
 
 # Extract Data from Gmail API
+@task()
 def extract():
     msgs=[]
     nextPageToken=None
@@ -110,6 +112,7 @@ def extract():
     return msgs
 
 # Write data to Google Cloud Storage
+@task()
 def write_raw(data):
     print(str(len(data))+' messages to write')
     if not len(data) > 0: return 'No messages to write'
@@ -158,6 +161,7 @@ def find_json_values(key, json_repr):
     return results
 
 # Extract data from Indeed Emails
+@task()
 def extract_indeed(data):
     # Find all 'data' key in JSON and return an array of values
     body = find_json_values('data',json.dumps(data))
@@ -235,6 +239,7 @@ def transform_raw(raw_data):
         formatted_data.append(formatted_email)
     return formatted_data
 
+@task()
 def write_stage_1(formatted_data):
     timestamp=datetime.datetime.now().strftime("%Y-%m-%dT%H%M%S")
     df = pd.DataFrame(formatted_data)

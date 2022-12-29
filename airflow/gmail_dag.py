@@ -5,7 +5,7 @@ from airflow.decorators import task
 from airflow.utils.task_group import TaskGroup
 #from airflow.providers.postgres.hooks.postgres import PostgresHook
 
-with DAG('gmail_etl_dag', schedule='@daily', start_date=datetime(2022,12,1),catchup=False) as dag:
+with DAG('gmail_etl_dag', schedule_interval='@daily', start_date=datetime(2022,12,1),catchup=False) as dag:
     with TaskGroup("extract_gmail_write", tooltip="Extract raw gmail data") as extract_load_raw:
         raw_emails = resources.extract()
         load_raw_emails = resources.write_raw(raw_emails)
