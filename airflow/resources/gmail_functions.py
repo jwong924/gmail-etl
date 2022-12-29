@@ -10,7 +10,7 @@ import pandas as pd
 import csv
 from bs4 import BeautifulSoup as BeautifulSoup
 from google.cloud import storage # pip install google-cloud-storage
-from resources import get_token
+import get_token
 from airflow.hooks.base import BaseHook
 
 # Connect into Google API
