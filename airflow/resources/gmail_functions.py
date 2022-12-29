@@ -230,7 +230,6 @@ def transform_load_raw():
     raw_data = []
     formatted_data=[]
     blobs = list_blobs('gmail-etl','raw/')
-    print(str(len(blobs))+' found in bucket')
     for blob in blobs:
         try:
             print(blob.name)
