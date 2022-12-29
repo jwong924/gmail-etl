@@ -133,7 +133,7 @@ def extract():
     nextPageToken=None
     query=''
     count=1
-    limit=20 # Set limit of Email's to retrieve
+    limit=10 # Set limit of Email's to retrieve
     try:
         # Set Google Auth Header
         token = google_auth()
@@ -229,14 +229,12 @@ def transform_load_raw():
     timestamp=datetime.datetime.now().strftime("%Y-%m-%dT%H%M%S")
     raw_data = []
     blobs = list_blobs('gmail-etl','raw/')
-    print(str(blobs))
-    print(str(blobs.prefixes))
     for blob in blobs:
         print(blob.name)
-        #raw_data = raw_data + json.loads(read_gcs_blob('gmail-etl',blob.name))
-    return
+        raw_data = raw_data + read_gcs_blob('gmail-etl',blob.name)
     formatted_data=[]
     for item in raw_data:
+        item = json.loads(item)
         print('Processing item: '+item['id'])
         # Extract standard meta data
         formatted_email = {
