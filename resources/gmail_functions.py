@@ -148,7 +148,7 @@ def extract():
     nextPageToken=None
     query=''
     count=1
-    limit=10 # Set limit of Email's to retrieve
+    limit=300 # Set limit of Email's to retrieve
     try:
         # Set Google Auth Header
         token = google_auth()
