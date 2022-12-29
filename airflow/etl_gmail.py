@@ -47,6 +47,8 @@ def db_auth():
         sys.exit(1)
 
 def write_to_gcs(data,bucket_name,blob_name):
+    # Connect to Google Bucket
+    os.environ['GOOGLE_APPLICATION_CREDENTIALS']='ServiceKey_GoogleCloud.json'
     try:
         storage_client = storage.Client()
         bucket = storage_client.get_bucket(bucket_name)
@@ -132,8 +134,6 @@ def write_raw(data):
         else:
             print(str('Adding '+item['id'])+' to local DB')
             cursor.execute(f"insert into emails (id,date) values ('{item_id}','{today}')")
-    # Connect to Google Bucket
-    os.environ['GOOGLE_APPLICATION_CREDENTIALS']='ServiceKey_GoogleCloud.json'
     bucket_name = 'gmail-etl'
     blob_name = 'raw/'+str(timestamp)+'.json'
     r=write_to_gcs(data,bucket_name,blob_name)
