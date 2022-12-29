@@ -198,4 +198,5 @@ if __name__ == '__main__':
         write_raw(msgs)
         formatted_msgs=transform_raw(msgs)
         df = pd.DataFrame(formatted_msgs)
+        print(df.head())
         write_to_gcs(df.to_csv(index=False),'gmail-etl','stage-1/test.csv')
