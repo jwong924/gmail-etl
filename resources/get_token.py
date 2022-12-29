@@ -22,8 +22,10 @@ def get_token():
     # If there are no (valid) credentials available, let the user log in.
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
+            print('Token expired, refreshing token')
             creds.refresh(Request())
         else:
+            print('No token found, writing new token')
             flow = InstalledAppFlow.from_client_secrets_file(
                 'credentials.json', SCOPES)
             creds = flow.run_local_server(port=0)
