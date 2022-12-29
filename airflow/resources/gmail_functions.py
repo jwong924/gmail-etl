@@ -231,7 +231,7 @@ def transform_load_raw():
     blobs = list_blobs('gmail-etl','raw/')
     for blob in blobs:
         print(blob.name)
-        raw_data = raw_data + read_gcs_blob('gmail-etl',blob.name)
+        if '.json' in blob.name:raw_data = raw_data + read_gcs_blob('gmail-etl',blob.name)
     formatted_data=[]
     for item in raw_data:
         item = json.loads(item)
