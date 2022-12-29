@@ -275,6 +275,7 @@ def transform_load_raw():
                 formatted_email.update({'date_string':formatted_date})
             if header['name'].lower() == 'from':
                 sender = header['value']
+                print(sender)
                 sender = sender.replace('<','').replace('>','').split(' ')
                 i = len(sender) - 1
                 formatted_email.update({'from':sender[i].strip()})
