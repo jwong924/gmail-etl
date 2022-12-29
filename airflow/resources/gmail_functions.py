@@ -11,7 +11,6 @@ import csv
 from bs4 import BeautifulSoup as BeautifulSoup
 from google.cloud import storage # pip install google-cloud-storage
 from resources import get_token
-from airflow.decorators import task
 from airflow.hooks.base import BaseHook
 
 # Connect into Google API
@@ -48,6 +47,7 @@ def db_auth():
         print(f'Exception error trying to connect to postgresql server: {e}')
         sys.exit(1)
 
+# Write to GCS
 def write_to_gcs(data,bucket_name,blob_name):
     # Connect to Google Bucket
     os.environ['GOOGLE_APPLICATION_CREDENTIALS']='ServiceKey_GoogleCloud.json'
@@ -57,13 +57,69 @@ def write_to_gcs(data,bucket_name,blob_name):
         blob = bucket.blob(blob_name)
         blob.open('w').write(data)
         print('File written to '+bucket_name+'/'+blob_name)
-        return json.dumps({"StatusCode":200},indent=4)
+        return json.dumps({"statusCode":200},indent=4)
     except Exception as e:
         print('Error in writting to Google Cloud Storage: '+str(e))
-        return json.dumps({"StatusCode":400,"Error":"Error in writting to Google Cloud Storage"+str(e)},indent=4)
+        return json.dumps({"statusCode":400,"error":"Error in writting to Google Cloud Storage"+str(e)},indent=4)
+
+# Read GCS blob
+def read_gcs(bucket_name,blob_name):
+    # Connect to Google Bucket
+    os.environ['GOOGLE_APPLICATION_CREDENTIALS']='ServiceKey_GoogleCloud.json'
+    try:
+        storage_client = storage.client()
+        bucket = storage_client.bucket(bucket_name)
+        blob = bucket.blob(blob_name)
+        result = blob.open('r').read()
+    except Exception as e:
+        result = e
+    return e
+
+# Write data to Google Cloud Storage
+def write_raw(data):
+    print(str(len(data))+' messages to write')
+    if not len(data) > 0: return 'No messages to write'
+    timestamp=datetime.datetime.now().strftime("%Y-%m-%dT%H%M%S")
+    today = datetime.datetime.today().strftime('%Y-%m-%d')
+    # Connect to local DB
+    try:
+        conn = db_auth()
+        cursor = conn.cursor()
+    except Exception as e:
+        print('Error connecting to local DB ' + str(e))
+        conn.close()
+        return
+
+    for item in data:
+        item_id = str(item['id'])
+        # Query DB to check if messages have been queried already
+        cursor.execute(f"SELECT * FROM emails WHERE id = '{item_id}';")
+        db_response = cursor.fetchone()
+        if db_response:
+            print(str(item['id'])+' has been queried with results: '+str(db_response)+', removing from data array')
+            # Remove queried item from data array
+            data.remove(item)
+        else:
+            print(str('Adding '+item['id'])+' to local DB')
+            cursor.execute(f"insert into emails (id,date) values ('{item_id}','{today}')")
+    bucket_name = 'gmail-etl'
+    blob_name = 'raw/'+str(timestamp)+'.json'
+    r=write_to_gcs(json.dumps(data),bucket_name,blob_name)
+    r=json.loads(r)
+    if r['statusCode']==200:
+        result = {
+            "statusCode":200,
+            "bucket":bucket_name,
+            "blob":blob_name
+        }
+        conn.commit()
+    else: 
+        print(json.dumps(r,indent=4))
+        result = r
+    conn.close()
+    return json.dumps(result,indent=4)
 
 # Extract Data from Gmail API
-@task()
 def extract():
     msgs=[]
     nextPageToken=None
@@ -109,44 +165,8 @@ def extract():
         print('Extract Function Error: '+str(e))
     finally:
         conn.close()
-    return msgs
-
-# Write data to Google Cloud Storage
-@task()
-def write_raw(data):
-    print(str(len(data))+' messages to write')
-    if not len(data) > 0: return 'No messages to write'
-    timestamp=datetime.datetime.now().strftime("%Y-%m-%dT%H%M%S")
-    today = datetime.datetime.today().strftime('%Y-%m-%d')
-    # Connect to local DB
-    try:
-        conn = db_auth()
-        cursor = conn.cursor()
-    except Exception as e:
-        print('Error connecting to local DB ' + str(e))
-        conn.close()
-        return
-
-    for item in data:
-        item_id = str(item['id'])
-        # Query DB to check if messages have been queried already
-        cursor.execute(f"SELECT * FROM emails WHERE id = '{item_id}';")
-        db_response = cursor.fetchone()
-        if db_response:
-            print(str(item['id'])+' has been queried with results: '+str(db_response)+', removing from data array')
-            # Remove queried item from data array
-            data.remove(item)
-        else:
-            print(str('Adding '+item['id'])+' to local DB')
-            cursor.execute(f"insert into emails (id,date) values ('{item_id}','{today}')")
-    bucket_name = 'gmail-etl'
-    blob_name = 'raw/'+str(timestamp)+'.json'
-    r=write_to_gcs(json.dumps(data),bucket_name,blob_name)
-    r=json.loads(r)
-    if r['StatusCode']==200:conn.commit()
-    else: print(json.dumps(r,indent=4))
-    conn.close()
-    return 'Data written to: '+bucket_name+'/'+blob_name
+    result = write_raw(msgs)
+    return result
 
 # Find JSON values by key
 def find_json_values(key, json_repr):
@@ -161,7 +181,6 @@ def find_json_values(key, json_repr):
     return results
 
 # Extract data from Indeed Emails
-@task()
 def extract_indeed(data):
     # Find all 'data' key in JSON and return an array of values
     body = find_json_values('data',json.dumps(data))
@@ -198,8 +217,9 @@ def extract_linkedin(data):
     return linkedin_data
 
 # Transform to Stage 1
-@task()
-def transform_raw(raw_data):
+def transform_load_raw(bucket_name,blob_name):
+    timestamp=datetime.datetime.now().strftime("%Y-%m-%dT%H%M%S")
+    raw_data = json.loads(read_gcs(bucket_name,blob_name))
     formatted_data=[]
     for item in raw_data:
         print('Processing item: '+item['id'])
@@ -238,21 +258,26 @@ def transform_raw(raw_data):
         if('jobs-noreply@linkedin.com' in formatted_email['from']):
             formatted_email.update(extract_linkedin(item))
         formatted_data.append(formatted_email)
-    return formatted_data
-
-@task()
-def write_stage_1(formatted_data):
-    timestamp=datetime.datetime.now().strftime("%Y-%m-%dT%H%M%S")
     df = pd.DataFrame(formatted_data)
     print(df.head())
     bucket_name = 'gmail-etl'
     blob_name = 'stage-1/'+str(timestamp)+'.csv'
-    write_to_gcs(df.to_csv(index=False, quoting=csv.QUOTE_NONNUMERIC, encoding='utf-8-sig'),bucket_name,blob_name)
-    return blob_name
+    r = write_to_gcs(df.to_csv(index=False, quoting=csv.QUOTE_NONNUMERIC, encoding='utf-8-sig'),bucket_name,blob_name)
+    r = json.loads(r)
+    if r['statusCode']==200:
+        result = {
+            "statusCode":200,
+            "bucket":bucket_name,
+            "blob":blob_name
+        }
+    else: 
+        print(json.dumps(r,indent=4))
+        result = r
+    return json.dumps(result,indent=4)
 
 if __name__ == '__main__':
     msgs = extract()
-    if len(msgs) > 0:
-        write_raw(msgs)
-        formatted_msgs=transform_raw(msgs)
-        write_stage_1(formatted_msgs)
+    msgs = json.loads(msgs)
+    if msgs['statusCode'] == 200:
+        formatted_msgs=transform_load_raw(msgs['bucket'],msgs['blob'])
+        print(formatted_msgs)
