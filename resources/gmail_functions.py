@@ -235,9 +235,10 @@ def extract_linkedin(data):
         if 'Your application was sent to' in item.text.strip(): is_application_sent = True
     # Update metadata
     if is_application_sent:elements = [x.get_text() for x in soup.find('td').find_all('p')]
-    role = elements[1].split(' · ')[0]
-    location = elements[1].split(' · ')[1]
-    try:linkedin_data = {'role':role,'org':elements[2],'location':location}
+    try:
+        role = elements[1].split(' · ')[0]
+        location = elements[1].split(' · ')[1]
+        linkedin_data = {'role':role,'org':elements[2],'location':location}
     except:linkedin_data={}
     return linkedin_data
 
