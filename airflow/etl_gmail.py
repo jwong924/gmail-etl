@@ -170,12 +170,12 @@ def transform_raw(raw_data):
                 formatted_email.update({'subject':item['value']})
             if 'date' in header['name'].lower():
                 try:
-                    formatted_date = dateutil.parser.parse(item['value']).strftime('%D %H:%M:%S')
+                    formatted_date = dateutil.parser.parse(header['value']).strftime('%D %H:%M:%S')
                 except:
-                    formatted_date = dateutil.parser.parse(item['value'],fuzzy=True).strftime('%D %H:%M:%S')
+                    formatted_date = dateutil.parser.parse(header['value'],fuzzy=True).strftime('%D %H:%M:%S')
                 formatted_email.update({'date_string':formatted_date})
             if 'from' in header['name'].lower():
-                formatted_email.update({'from':item['value']})
+                formatted_email.update({'from':header['value']})
         
         # Find and extract all 'Body' data and translate Base64 to utf-8
         body_array = find_json_values('data',json.dumps(item))
