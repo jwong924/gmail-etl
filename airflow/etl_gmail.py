@@ -156,10 +156,47 @@ def find_json_values(key, json_repr):
     json.loads(json_repr, object_hook=_decode_dict)
     return results
 
+# Extract data from Indeed Emails
+def extract_indeed(data):
+    # Find all 'data' key in JSON and return an array of values
+    body = find_json_values('data',json.dumps(data))
+    text = []
+    for item in body:
+        text.append(base64.urlsafe_b64decode(item).decode('utf-8'))
+    text = ' '.join(text)
+    elements = []
+    soup = BeautifulSoup(text,'html.parser')
+    for item in soup.find(attrs={'dir':'rtl'}).find_all(['a', 'p']):
+        elements.append(item.text.strip())
+    # Update metadata
+    try:indeed_data = {'role':elements[1],'org':elements[3],'location':elements[2].split(' - ')[1]}
+    except:indeed_data = {}
+    return indeed_data
+
+# Extract data from LinkedIn Emails
+def extract_linkedin(data):
+    body = find_json_values('data',json.dumps(data))
+    text = []
+    for item in body:
+        text.append(base64.urlsafe_b64decode(item).decode('utf-8'))
+    text = ' '.join(text)
+    elements = []
+    is_application_sent = False
+    soup = BeautifulSoup(text,'html.parser')
+    title = soup.find('h2')
+    for item in title:
+        if 'Your application was sent to' in item.text.strip(): is_application_sent = True
+    # Update metadata
+    if is_application_sent:elements = [x.get_text() for x in soup.find('td').find_all('p')]
+    try:linkedin_data = {'role':elements[1],'org':elements[2]}
+    except:linkedin_data={}
+    return linkedin_data
+
 # Transform to Stage 1
 def transform_raw(raw_data):
     formatted_data=[]
     for item in raw_data:
+        print('Processing item: '+item['id'])
         # Extract standard meta data
         formatted_email = {
             'id':item['id'],
@@ -190,14 +227,25 @@ def transform_raw(raw_data):
         soup = BeautifulSoup(body_text,'html.parser')
         clean = soup.get_text(strip=True).encode('ascii','ignore').decode('utf-8').replace('\r','').replace('\n','')
         formatted_email.update({'body':clean})
+        if('indeedapply@indeed.com' in formatted_email['from']):
+            formatted_email.update(extract_indeed(item))
+        if('jobs-noreply@linkedin.com' in formatted_email['from']):
+            formatted_email.update(extract_linkedin(item))
         formatted_data.append(formatted_email)
     return formatted_data
+
+def write_stage_1(formatted_data):
+    timestamp=datetime.datetime.now().strftime("%Y-%m-%dT%H%M%S")
+    df = pd.DataFrame(formatted_data)
+    print(df.head())
+    bucket_name = 'gmail-etl'
+    blob_name = 'stage-1/'+str(timestamp)+'.json'
+    write_to_gcs(df.to_csv(index=False, quoting=csv.QUOTE_NONNUMERIC),bucket_name,blob_name)
+    return
 
 if __name__ == '__main__':
     msgs = extract()
     if len(msgs) > 0:
         write_raw(msgs)
         formatted_msgs=transform_raw(msgs)
-        df = pd.DataFrame(formatted_msgs)
-        print(df.head())
-        write_to_gcs(df.to_csv(index=False, quoting=csv.QUOTE_NONNUMERIC),'gmail-etl','stage-1/test.csv')
+        write_stage_1(formatted_msgs)
