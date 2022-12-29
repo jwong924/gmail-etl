@@ -72,6 +72,7 @@ def read_gcs(bucket_name,blob_name):
         bucket = storage_client.bucket(bucket_name)
         blob = bucket.blob(blob_name)
         result = blob.open('r').read()
+        print(type(result))
     except Exception as e:
         result = e
     return result
