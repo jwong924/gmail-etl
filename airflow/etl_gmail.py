@@ -55,10 +55,10 @@ def write_to_gcs(data,bucket_name,blob_name):
         blob = bucket.blob(blob_name)
         blob.open('w').write(json.dumps(data))
         print('File written to '+bucket_name+'/'+blob_name)
-        return {"StatusCode":200}
+        return json.dumps({"StatusCode":200},indent=4)
     except Exception as e:
         print('Error in writting to Google Cloud Storage: '+str(e))
-        return {"StatusCode":400,"Error":"Error in writting to Google Cloud Storage"+str(e)}
+        return json.dumps({"StatusCode":400,"Error":"Error in writting to Google Cloud Storage"+str(e)},indent=4)
 
 # Extract Data from Gmail API
 def extract():
