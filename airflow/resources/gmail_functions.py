@@ -68,8 +68,8 @@ def read_gcs(bucket_name,blob_name):
     # Connect to Google Bucket
     os.environ['GOOGLE_APPLICATION_CREDENTIALS']='ServiceKey_GoogleCloud.json'
     try:
-        storage_client = storage.client()
-        bucket = storage_client.bucket(bucket_name)
+        storage_client = storage.Client()
+        bucket = storage_client.get_bucket(bucket_name)
         blob = bucket.blob(blob_name)
         result = blob.open('r').read()
         print(type(result))
