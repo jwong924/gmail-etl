@@ -137,7 +137,7 @@ def write_raw(data):
             cursor.execute(f"insert into emails (id,date) values ('{item_id}','{today}')")
     bucket_name = 'gmail-etl'
     blob_name = 'raw/'+str(timestamp)+'.json'
-    r=write_to_gcs(data,bucket_name,blob_name)
+    r=write_to_gcs(json.dumps(data),bucket_name,blob_name)
     r=json.loads(r)
     if r['StatusCode']==200:conn.commit()
     else: print(json.dumps(r,indent=4))
@@ -239,7 +239,7 @@ def write_stage_1(formatted_data):
     df = pd.DataFrame(formatted_data)
     print(df.head())
     bucket_name = 'gmail-etl'
-    blob_name = 'stage-1/'+str(timestamp)+'.json'
+    blob_name = 'stage-1/'+str(timestamp)+'.csv'
     write_to_gcs(df.to_csv(index=False, quoting=csv.QUOTE_NONNUMERIC),bucket_name,blob_name)
     return
 
