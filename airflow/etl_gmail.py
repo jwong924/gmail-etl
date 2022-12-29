@@ -242,7 +242,7 @@ def write_stage_1(formatted_data):
     bucket_name = 'gmail-etl'
     blob_name = 'stage-1/'+str(timestamp)+'.csv'
     write_to_gcs(df.to_csv(index=False, quoting=csv.QUOTE_NONNUMERIC, encoding='utf-8-sig'),bucket_name,blob_name)
-    return
+    return blob_name
 
 if __name__ == '__main__':
     msgs = extract()
