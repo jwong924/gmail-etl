@@ -262,15 +262,15 @@ def transform_load_raw():
         }
         # Loop through headers to find metadata
         for header in item['payload']['headers']:
-            if 'subject' in header['name'].lower():
+            if header['name'].lower() == 'subject':
                 formatted_email.update({'subject':header['value']})
-            if 'date' in header['name'].lower():
+            if header['name'].lower() == 'date':
                 try:
                     formatted_date = dateutil.parser.parse(header['value']).strftime('%D %H:%M:%S')
                 except:
                     formatted_date = dateutil.parser.parse(header['value'],fuzzy=True).strftime('%D %H:%M:%S')
                 formatted_email.update({'date_string':formatted_date})
-            if 'from' in header['name'].lower():
+            if header['name'].lower() == 'from':
                 formatted_email.update({'from':header['value']})
         
         # Find and extract all 'Body' data and translate Base64 to utf-8
