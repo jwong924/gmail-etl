@@ -277,16 +277,16 @@ def transform_load_raw():
                 sender = header['value']
                 sender = sender.split('<')
                 i = len(sender) - 1
-                print(str(sender)+' length: '+str(i))
                 formatted_email.update({'from':sender[i].replace('>','').strip()})
-                print('successful')
-        
+                
         # Find and extract all 'Body' data and translate Base64 to utf-8
+        print('Get body')
         body_array = find_json_values('data',json.dumps(item))
         body_text = []
         for body in body_array:
             body_text.append(base64.urlsafe_b64decode(body).decode('utf-8'))
         # Join body of texts
+        print('join body')
         body_text = ' '.join(body_text)
 
         # Parse HTML with BeautifulSoup
