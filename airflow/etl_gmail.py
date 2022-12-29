@@ -200,4 +200,4 @@ if __name__ == '__main__':
         formatted_msgs=transform_raw(msgs)
         df = pd.DataFrame(formatted_msgs)
         print(df.head())
-        write_to_gcs(df.to_csv(index=False, quoting=csv.QUOTENONNUMERIC),'gmail-etl','stage-1/test.csv')
+        write_to_gcs(df.to_csv(index=False, quoting=csv.QUOTE_NONNUMERIC),'gmail-etl','stage-1/test.csv')
