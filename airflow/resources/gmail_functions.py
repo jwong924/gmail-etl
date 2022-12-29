@@ -17,7 +17,7 @@ from airflow.hooks.base import BaseHook
 def google_auth():
     print('Getting Google API Token')
     try:
-        token = get_token()['token']
+        token = json.loads(get_token())['token']
     except Exception as e:
         print(e)
         sys.exit(1)
