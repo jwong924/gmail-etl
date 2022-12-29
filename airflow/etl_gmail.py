@@ -19,7 +19,7 @@ def google_auth():
         with open('token.json') as file:
             token = json.load(file)['token']
     except:
-        token = json.loads(get_token())['token']
+        token = get_token()['token']
     return token
 
 # Connect into PostgreSQL
@@ -54,7 +54,7 @@ def write_to_gcs(data,bucket_name,blob_name):
         storage_client = storage.Client()
         bucket = storage_client.get_bucket(bucket_name)
         blob = bucket.blob(blob_name)
-        blob.open('w').write(json.dumps(data))
+        blob.open('w').write(data)
         print('File written to '+bucket_name+'/'+blob_name)
         return json.dumps({"StatusCode":200},indent=4)
     except Exception as e:
@@ -137,7 +137,7 @@ def write_raw(data):
             cursor.execute(f"insert into emails (id,date) values ('{item_id}','{today}')")
     bucket_name = 'gmail-etl'
     blob_name = 'raw/'+str(timestamp)+'.json'
-    r=write_to_gcs(json.dumps(data),bucket_name,blob_name)
+    r=write_to_gcs(data,bucket_name,blob_name)
     r=json.loads(r)
     if r['StatusCode']==200:conn.commit()
     else: print(json.dumps(r,indent=4))
