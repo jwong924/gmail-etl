@@ -52,7 +52,7 @@ def db_auth():
 # Write to GCS
 def write_to_gcs(data,bucket_name,blob_name):
     # Connect to Google Bucket
-    os.environ['GOOGLE_APPLICATION_CREDENTIALS']='ServiceKey_GoogleCloud.json'
+    os.environ['GOOGLE_APPLICATION_CREDENTIALS']='/home/pi/airflow/credentials/gmail-etl/ServiceKey_GoogleCloud.json'
     try:
         storage_client = storage.Client()
         bucket = storage_client.get_bucket(bucket_name)
@@ -67,7 +67,7 @@ def write_to_gcs(data,bucket_name,blob_name):
 # Read GCS blob
 def read_gcs_blob(bucket_name,blob_name):
     # Connect to Google Bucket
-    os.environ['GOOGLE_APPLICATION_CREDENTIALS']='ServiceKey_GoogleCloud.json'
+    os.environ['GOOGLE_APPLICATION_CREDENTIALS']='/home/pi/airflow/credentials/gmail-etl/ServiceKey_GoogleCloud.json'
     try:
         storage_client = storage.Client()
         bucket = storage_client.get_bucket(bucket_name)
@@ -79,13 +79,13 @@ def read_gcs_blob(bucket_name,blob_name):
     return result
 
 def list_gcs_blobs(bucket_name,prefix):
-    os.environ['GOOGLE_APPLICATION_CREDENTIALS']='ServiceKey_GoogleCloud.json'
+    os.environ['GOOGLE_APPLICATION_CREDENTIALS']='/home/pi/airflow/credentials/gmail-etl/ServiceKey_GoogleCloud.json'
     storage_client = storage.Client()
     blobs = storage_client.list_blobs(bucket_name,prefix=prefix,delimiter='/')
     return blobs
 
 def move_gcs_blob(source_bucket_name, source_blob_name, destination_bucket_name, destination_blob_name):
-    os.environ['GOOGLE_APPLICATION_CREDENTIALS']='ServiceKey_GoogleCloud.json'
+    os.environ['GOOGLE_APPLICATION_CREDENTIALS']='/home/pi/airflow/credentials/gmail-etl/ServiceKey_GoogleCloud.json'
     storage_client = storage.Client()
     source_bucket = storage_client.bucket(source_bucket_name)
     source_blob = source_bucket.blob(source_blob_name)
