@@ -279,6 +279,7 @@ def transform_load_raw(bucket_name,blob_name):
 
 if __name__ == '__main__':
     msgs = extract()
+    print(msgs)
     msgs = json.loads(msgs)
     if msgs['statusCode'] == 200:
         formatted_msgs=transform_load_raw(msgs['bucket'],msgs['blob'])
