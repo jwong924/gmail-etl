@@ -15,7 +15,12 @@ from airflow.hooks.base import BaseHook
 
 # Connect into Google API
 def google_auth():
-    token = get_token()['token']
+    print('Getting Google API Token')
+    try:
+        token = get_token()['token']
+    except Exception as e:
+        print(e)
+        sys.exit(1)
     return token
 
 # Connect into PostgreSQL
