@@ -12,6 +12,7 @@ from bs4 import BeautifulSoup as BeautifulSoup
 from google.cloud import storage # pip install google-cloud-storage
 import resources
 from airflow.hooks.base import BaseHook
+from airflow.decorators import task
 
 # Connect into Google API
 def google_auth():
@@ -141,6 +142,7 @@ def write_raw(data):
     return json.dumps(result)
 
 # Extract Data from Gmail API
+@task(task_id='extract')
 def extract():
     msgs=[]
     nextPageToken=None
@@ -238,6 +240,7 @@ def extract_linkedin(data):
     return linkedin_data
 
 # Transform to Stage 1
+@task(task_id='transform_load_raw')
 def transform_load_raw():
     timestamp=datetime.datetime.now().strftime("%Y-%m-%dT%H%M%S")
     processed_blobs=[]
