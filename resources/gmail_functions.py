@@ -271,7 +271,10 @@ def transform_load_raw():
                     formatted_date = dateutil.parser.parse(header['value'],fuzzy=True).strftime('%D %H:%M:%S')
                 formatted_email.update({'date_string':formatted_date})
             if header['name'].lower() == 'from':
-                formatted_email.update({'from':header['value']})
+                sender = header['value']
+                sender = sender.replace('<','').replace('>','').split(' ')
+                i = len(sender) - 1
+                formatted_email.update({'from':sender[i]})
         
         # Find and extract all 'Body' data and translate Base64 to utf-8
         body_array = find_json_values('data',json.dumps(item))
@@ -285,11 +288,14 @@ def transform_load_raw():
         soup = BeautifulSoup(body_text,'html.parser')
         clean = soup.get_text(strip=True).encode('ascii','ignore').decode('utf-8').replace('\r','').replace('\n','')
         formatted_email.update({'body':clean})
-        if('indeedapply@indeed.com' in formatted_email['from']):
+
+        # Known transformations from Indeed and LinkedIn
+        if(formatted_email['from'] == 'indeedapply@indeed.com'):
             formatted_email.update(extract_indeed(item))
-        if('jobs-noreply@linkedin.com' in formatted_email['from']):
+        if(formatted_email['from'] == 'jobs-noreply@linkedin.com'):
             formatted_email.update(extract_linkedin(item))
         formatted_data.append(formatted_email)
+
     df = pd.DataFrame(formatted_data)
     print(df.head())
     bucket_name = 'gmail-etl'

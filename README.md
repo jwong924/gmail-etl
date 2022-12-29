@@ -18,3 +18,8 @@ airflow db init
 airflow webserver --port 8080
 airflow scheduler
 ```
+
+Refresh Dags
+```bash
+python -c "from airflow.models import DagBag; d = DagBag();"
+```
