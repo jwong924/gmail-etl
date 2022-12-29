@@ -242,7 +242,7 @@ def extract_linkedin(data):
     return linkedin_data
 
 # Transform to Stage 1
-@task(task_id='transform_load_raw')
+#@task(task_id='transform_load_raw')
 def transform_load_raw():
     print('Starting Transform Load Task')
     timestamp=datetime.datetime.now().strftime("%Y-%m-%dT%H%M%S")
