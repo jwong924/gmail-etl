@@ -294,9 +294,10 @@ def transform_load_raw():
     r = write_to_gcs(df.to_csv(index=False, quoting=csv.QUOTE_NONNUMERIC, encoding='utf-8-sig'),bucket_name,blob_name)
     r = json.loads(r)
     if r['statusCode']==200:
+        # Moving processed blobs
         for blob in processed_blobs:
             blob_name = blob.split('/')[1]
-            move_gcs_blob('gmail-etl',blob,'gmail-etl','processed/'+blob_name)
+            move_gcs_blob('gmail-etl',blob,'gmail-etl','raw/processed/'+blob_name)
         result = {
             "statusCode":200,
             "bucket":bucket_name,
