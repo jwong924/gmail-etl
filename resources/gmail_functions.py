@@ -279,6 +279,7 @@ def transform_load_raw():
                 i = len(sender) - 1
                 print(str(sender)+' length: '+str(i))
                 formatted_email.update({'from':sender[i].replace('>','').strip()})
+                print('successful')
         
         # Find and extract all 'Body' data and translate Base64 to utf-8
         body_array = find_json_values('data',json.dumps(item))
