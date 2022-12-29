@@ -190,7 +190,6 @@ def transform_raw(raw_data):
         soup = BeautifulSoup(body_text,'html.parser')
         clean = soup.get_text(strip=True).encode('ascii','ignore').decode('utf-8').replace('\r','').replace('\n','')
         formatted_email.update({'body':clean})
-        print(formatted_email)
         formatted_data.append(formatted_email)
     return formatted_data
 
