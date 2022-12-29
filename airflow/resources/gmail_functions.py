@@ -228,13 +228,15 @@ def extract_linkedin(data):
 def transform_load_raw():
     timestamp=datetime.datetime.now().strftime("%Y-%m-%dT%H%M%S")
     raw_data = []
-    blobs = list_blobs('gmail-etl','raw/')
-    for blob in blobs:
-        print(blob.name)
-        if '.json' in blob.name:raw_data = raw_data + json.loads(read_gcs_blob('gmail-etl',blob.name))
     formatted_data=[]
+    blobs = list_blobs('gmail-etl','raw/')
+    print(str(len(blobs))+' found in bucket')
+    for blob in blobs:
+        try:
+            print(blob.name)
+            raw_data = raw_data + json.loads(read_gcs_blob('gmail-etl',blob.name))
+        except: pass
     for item in raw_data:
-        item = json.loads(item)
         print('Processing item: '+item['id'])
         # Extract standard meta data
         formatted_email = {
