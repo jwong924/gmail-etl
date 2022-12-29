@@ -167,7 +167,7 @@ def transform_raw(raw_data):
         # Loop through headers to find metadata
         for header in item['payload']['headers']:
             if 'subject' in header['name'].lower():
-                formatted_email.update({'subject':item['value']})
+                formatted_email.update({'subject':header['value']})
             if 'date' in header['name'].lower():
                 try:
                     formatted_date = dateutil.parser.parse(header['value']).strftime('%D %H:%M:%S')
