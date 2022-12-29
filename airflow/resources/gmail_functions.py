@@ -229,10 +229,12 @@ def transform_load_raw():
     timestamp=datetime.datetime.now().strftime("%Y-%m-%dT%H%M%S")
     raw_data = []
     blobs = list_blobs('gmail-etl','raw/')
+    print(str(blobs))
     print(str(blobs.prefixes))
     for blob in blobs:
         print(blob.name)
-        raw_data = raw_data + json.loads(read_gcs_blob('gmail-etl',blob.name))
+        #raw_data = raw_data + json.loads(read_gcs_blob('gmail-etl',blob.name))
+    return
     formatted_data=[]
     for item in raw_data:
         print('Processing item: '+item['id'])
