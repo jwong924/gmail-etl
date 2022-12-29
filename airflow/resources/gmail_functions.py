@@ -72,7 +72,6 @@ def read_gcs_blob(bucket_name,blob_name):
         bucket = storage_client.get_bucket(bucket_name)
         blob = bucket.blob(blob_name)
         result = blob.open('r').read()
-        print(type(result))
     except Exception as e:
         print(e)
         result = e
@@ -230,7 +229,9 @@ def transform_load_raw():
     timestamp=datetime.datetime.now().strftime("%Y-%m-%dT%H%M%S")
     raw_data = []
     blobs = list_blobs('gmail-etl','raw/')
+    print(str(blobs.prefixes))
     for blob in blobs:
+        print(blob.name)
         raw_data = raw_data + json.loads(read_gcs_blob('gmail-etl',blob.name))
     formatted_data=[]
     for item in raw_data:
