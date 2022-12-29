@@ -4,8 +4,13 @@ import datetime
 import psycopg2
 import sys
 import os
+import dateutil.parser
+import base64 as base64
+import pandas as pd
+from bs4 import BeautifulSoup as BeautifulSoup
 from google.cloud import storage # pip install google-cloud-storage
 from get_token import get_token
+from airflow.hooks.base import BaseHook
 
 # Connect into Google API
 def google_auth():
@@ -19,6 +24,8 @@ def google_auth():
 # Connect into PostgreSQL
 def db_auth():
     try:
+        db_details = BaseHook.get_connection('gmail-etl')
+        """
         conn = psycopg2.connect(
             user=os.environ.get("POSTGRESQL_USER"),
             password=os.environ.get("POSTGRESQL_PASSWORD"),
@@ -26,10 +33,30 @@ def db_auth():
             port=int(os.environ.get("POSTGRESQL_PORT")),
             dbname='gmail'
         )
+        """
+        conn = psycopg2.connect(
+            user=db_details.login,
+            password=db_details.password,
+            host=db_details.host,
+            port=db_details.port,
+            dbname=db_details.schema
+        )
         return conn
     except psycopg2.Error as e:
         print(f'Exception error trying to connect to postgresql server: {e}')
         sys.exit(1)
+
+def write_to_gcs(data,bucket_name,blob_name):
+    try:
+        storage_client = storage.Client()
+        bucket = storage_client.get_bucket(bucket_name)
+        blob = bucket.blob(blob_name)
+        blob.open('w').write(json.dumps(data))
+        print('File written to '+bucket_name+'/'+blob_name)
+        return {"StatusCode":200}
+    except Exception as e:
+        print('Error in writting to Google Cloud Storage: '+str(e))
+        return {"StatusCode":400,"Error":"Error in writting to Google Cloud Storage"+str(e)}
 
 # Extract Data from Gmail API
 def extract():
@@ -78,10 +105,11 @@ def extract():
         conn.close()
     return msgs
 
+# Write data to Google Cloud Storage
 def write_raw(data):
     print(str(len(data))+' messages to write')
     if not len(data) > 0: return 'No messages to write'
-    timestamp=str(datetime.datetime.now().strftime("%Y-%m-%dT%H%M%S"))
+    timestamp=datetime.datetime.now().strftime("%Y-%m-%dT%H%M%S")
     today = datetime.datetime.today().strftime('%Y-%m-%d')
     # Connect to local DB
     try:
@@ -106,21 +134,68 @@ def write_raw(data):
             cursor.execute(f"insert into emails (id,date) values ('{item_id}','{today}')")
     # Connect to Google Bucket
     os.environ['GOOGLE_APPLICATION_CREDENTIALS']='ServiceKey_GoogleCloud.json'
-    try:
-        storage_client = storage.Client()
-        bucket = storage_client.get_bucket('gmail-etl')
-        blob_name = 'raw/'+str(timestamp)+'.json'
-        blob = bucket.blob(blob_name)
-        blob.open('w').write(json.dumps(data))
-        conn.commit()
-    except Exception as e:
-        print('Error writing to Google Cloud Storage '+str(e))
-        return
-    finally:
-        conn.close()
-    return 'File written to '+blob_name
+    bucket_name = 'gmail-etl'
+    blob_name = 'raw/'+str(timestamp)+'.json'
+    r=write_to_gcs(data,bucket_name,blob_name)
+    r=json.loads(r)
+    if r['StatusCode']==200:conn.commit()
+    else: print(json.dumps(r,indent=4))
+    conn.close()
+    return 'Data written to: '+bucket_name+'/'+blob_name
+
+# Find JSON values by key
+def find_json_values(key, json_repr):
+    results=[]
+    def _decode_dict(a_dict):
+        try:
+            results.append(a_dict[key])
+        except KeyError:
+            pass
+        return a_dict
+    json.loads(json_repr, object_hook=_decode_dict)
+    return results
+
+# Transform to Stage 1
+def transform_raw(raw_data):
+    formatted_data=[]
+    for item in raw_data:
+        # Extract standard meta data
+        formatted_email = {
+            'id':item['id'],
+            'mimeType':item['payload']['mimeType']
+        }
+        # Loop through headers to find metadata
+        for header in item['payload']['headers']:
+            if 'subject' in header['name'].lower():
+                formatted_email.update({'subject':item['value']})
+            if 'date' in header['name'].lower():
+                try:
+                    formatted_date = dateutil.parser.parse(item['value']).strftime('%D %H:%M:%S')
+                except:
+                    formatted_date = dateutil.parser.parse(item['value'],fuzzy=True).strftime('%D %H:%M:%S')
+                formatted_email.update({'date_string':formatted_date})
+            if 'from' in header['name'].lower():
+                formatted_email.update({'from':item['value']})
+        
+        # Find and extract all 'Body' data and translate Base64 to utf-8
+        body_array = find_json_values('data',json.dumps(item))
+        body_text = []
+        for body in body_array:
+            body_text.append(base64.urlsafe_b64decode(body).decode('utf-8'))
+        # Join body of texts
+        body_text = ' '.join(body_text)
+
+        # Parse HTML with BeautifulSoup
+        soup = BeautifulSoup(body_text,'html.parser')
+        clean = soup.get_text(strip=True).encode('ascii','ignore').decode('utf-8').replace('\r','').replace('\n','')
+        formatted_email.update({'body':clean})
+        formatted_data.append(formatted_email)
+    return formatted_data
 
 if __name__ == '__main__':
     msgs = extract()
     if len(msgs) > 0:
         write_raw(msgs)
+        formatted_msgs=transform_raw(msgs)
+        df = pd.DataFrame.from_dict(formatted_msgs)
+        write_to_gcs(df.to_csv(),'gmail-etl','stage-1/test')
