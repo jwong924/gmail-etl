@@ -74,7 +74,7 @@ def read_gcs(bucket_name,blob_name):
         result = blob.open('r').read()
     except Exception as e:
         result = e
-    return e
+    return result
 
 # Write data to Google Cloud Storage
 def write_raw(data):
