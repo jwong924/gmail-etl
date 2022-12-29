@@ -221,6 +221,7 @@ def extract_indeed(data):
     return indeed_data
 
 # Extract data from LinkedIn Emails
+# BROKEN DO NOT USE
 def extract_linkedin(data):
     body = find_json_values('data',json.dumps(data))
     text = []
@@ -238,12 +239,13 @@ def extract_linkedin(data):
     try:
         role = elements[1].split(' · ')[0]
         location = elements[1].split(' · ')[1]
-        linkedin_data = {'role':role,'org':elements[2],'location':location}
+        org = elements[2].split(' · ')[0]
+        linkedin_data = {'role':role,'org':org,'location':location}
     except:linkedin_data={}
     return linkedin_data
 
 # Transform to Stage 1
-#@task(task_id='transform_load_raw')
+@task(task_id='transform_load_raw')
 def transform_load_raw():
     print('Starting Transform Load Task')
     timestamp=datetime.datetime.now().strftime("%Y-%m-%dT%H%M%S")
@@ -296,11 +298,9 @@ def transform_load_raw():
         # Known transformations from Indeed and LinkedIn
         if(formatted_email['from'] == 'indeedapply@indeed.com'):
             formatted_email.update(extract_indeed(item))
-        if(formatted_email['from'] == 'jobs-noreply@linkedin.com'):
-            formatted_email.update(extract_linkedin(item))
+        #if(formatted_email['from'] == 'jobs-noreply@linkedin.com'):
+            #formatted_email.update(extract_linkedin(item))
         formatted_data.append(formatted_email)
-        print('appending to array')
-
 
     df = pd.DataFrame(formatted_data)
     print(df.head())
