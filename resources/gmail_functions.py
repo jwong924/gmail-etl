@@ -321,4 +321,4 @@ def transform_load_raw():
 
 
 if __name__ == '__main__':
-    formatted_msgs=transform_load_raw()
+    transform_load_raw()
