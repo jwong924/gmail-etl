@@ -198,6 +198,7 @@ def extract_linkedin(data):
     return linkedin_data
 
 # Transform to Stage 1
+@task()
 def transform_raw(raw_data):
     formatted_data=[]
     for item in raw_data:
