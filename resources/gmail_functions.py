@@ -319,9 +319,4 @@ def transform_load_raw():
 
 
 if __name__ == '__main__':
-    msgs = extract()
-    print(msgs)
-    msgs = json.loads(msgs)
-    if msgs['statusCode'] == 200:
-        formatted_msgs=transform_load_raw()
-        print(formatted_msgs)
+    formatted_msgs=transform_load_raw()
