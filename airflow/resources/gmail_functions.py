@@ -74,6 +74,7 @@ def read_gcs(bucket_name,blob_name):
         result = blob.open('r').read()
         print(type(result))
     except Exception as e:
+        print(e)
         result = e
     return result
 
@@ -119,7 +120,7 @@ def write_raw(data):
         print(json.dumps(r,indent=4))
         result = r
     conn.close()
-    return json.dumps(result,indent=4)
+    return json.dumps(result)
 
 # Extract Data from Gmail API
 def extract():
