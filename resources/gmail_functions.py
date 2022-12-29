@@ -276,8 +276,8 @@ def transform_load_raw():
             if header['name'].lower() == 'from':
                 sender = header['value']
                 sender = sender.split('<')
-                print(str(sender))
                 i = len(sender) - 1
+                print(str(sender)+' length: '+str(i))
                 formatted_email.update({'from':sender[i].replace('>','').strip()})
         
         # Find and extract all 'Body' data and translate Base64 to utf-8
