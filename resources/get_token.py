@@ -18,7 +18,7 @@ def get_token():
     # created automatically when the authorization flow completes for the first
     # time.
     if os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('~/airflow/credentials/gmail-etl/token.json', SCOPES)
+        creds = Credentials.from_authorized_user_file('/home/pi/airflow/credentials/gmail-etl/token.json', SCOPES)
     # If there are no (valid) credentials available, let the user log in.
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
@@ -27,10 +27,10 @@ def get_token():
         else:
             print('No token found, writing new token')
             flow = InstalledAppFlow.from_client_secrets_file(
-                '~/airflow/credentials/gmail-etl/credentials.json', SCOPES)
+                '/home/pi/airflow/credentials/gmail-etl/credentials.json', SCOPES)
             creds = flow.run_local_server(port=0)
         # Save the credentials for the next run
-        with open('~/airflow/credentials/gmail-etl/token.json', 'w') as token:
+        with open('/home/pi/airflow/credentials/gmail-etl/token.json', 'w') as token:
             token.write(creds.to_json())
 
     try:
