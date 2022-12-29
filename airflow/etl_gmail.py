@@ -197,5 +197,5 @@ if __name__ == '__main__':
     if len(msgs) > 0:
         write_raw(msgs)
         formatted_msgs=transform_raw(msgs)
-        df = pd.DataFrame.from_dict(formatted_msgs)
+        df = pd.read_json(formatted_msgs)
         write_to_gcs(df.to_csv(index=False),'gmail-etl','stage-1/test.csv')
