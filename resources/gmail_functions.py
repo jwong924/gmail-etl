@@ -320,6 +320,9 @@ def transform_load_raw():
         result = r
     return json.dumps(result,indent=4)
 
-
 if __name__ == '__main__':
-    transform_load_raw()
+    print('running script')
+    try:
+        transform_load_raw()
+    except Exception as e:
+        print(e)
