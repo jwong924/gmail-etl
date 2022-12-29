@@ -10,7 +10,7 @@ import pandas as pd
 import csv
 from bs4 import BeautifulSoup as BeautifulSoup
 from google.cloud import storage # pip install google-cloud-storage
-from .get_token import get_token
+from get_token import get_token
 from airflow.hooks.base import BaseHook
 from airflow.decorators import task
 
@@ -235,7 +235,9 @@ def extract_linkedin(data):
         if 'Your application was sent to' in item.text.strip(): is_application_sent = True
     # Update metadata
     if is_application_sent:elements = [x.get_text() for x in soup.find('td').find_all('p')]
-    try:linkedin_data = {'role':elements[1],'org':elements[2]}
+    role = elements[1].split(' · ')[0]
+    location = elements[1].split(' · ')[1]
+    try:linkedin_data = {'role':role,'org':elements[2],'location':location}
     except:linkedin_data={}
     return linkedin_data
 
@@ -274,7 +276,7 @@ def transform_load_raw():
                 sender = header['value']
                 sender = sender.replace('<','').replace('>','').split(' ')
                 i = len(sender) - 1
-                formatted_email.update({'from':sender[i]})
+                formatted_email.update({'from':sender[i].strip()})
         
         # Find and extract all 'Body' data and translate Base64 to utf-8
         body_array = find_json_values('data',json.dumps(item))
