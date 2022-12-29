@@ -7,6 +7,7 @@ import os
 import dateutil.parser
 import base64 as base64
 import pandas as pd
+import csv
 from bs4 import BeautifulSoup as BeautifulSoup
 from google.cloud import storage # pip install google-cloud-storage
 from get_token import get_token
@@ -66,7 +67,7 @@ def extract():
     nextPageToken=None
     query=''
     count=1
-    limit=100 # Set limit of Email's to retrieve
+    limit=20 # Set limit of Email's to retrieve
     try:
         # Set Google Auth Header
         token = google_auth()
@@ -199,4 +200,4 @@ if __name__ == '__main__':
         formatted_msgs=transform_raw(msgs)
         df = pd.DataFrame(formatted_msgs)
         print(df.head())
-        write_to_gcs(df.to_csv(index=False),'gmail-etl','stage-1/test.csv')
+        write_to_gcs(df.to_csv(index=False, quoting=csv.QUOTENONNUMERIC),'gmail-etl','stage-1/test.csv')
