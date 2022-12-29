@@ -10,7 +10,7 @@ import pandas as pd
 import csv
 from bs4 import BeautifulSoup as BeautifulSoup
 from google.cloud import storage # pip install google-cloud-storage
-import resources
+from get_token import get_token
 from airflow.hooks.base import BaseHook
 from airflow.decorators import task
 
@@ -18,7 +18,7 @@ from airflow.decorators import task
 def google_auth():
     print('Getting Google API Token')
     try:
-        token = json.loads(resources.get_token())['token']
+        token = json.loads(get_token())['token']
     except Exception as e:
         print(e)
         sys.exit(1)
