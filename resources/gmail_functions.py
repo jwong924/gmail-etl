@@ -280,13 +280,11 @@ def transform_load_raw():
                 formatted_email.update({'from':sender[i].replace('>','').strip()})
                 
         # Find and extract all 'Body' data and translate Base64 to utf-8
-        print('Get body')
         body_array = find_json_values('data',json.dumps(item))
         body_text = []
         for body in body_array:
             body_text.append(base64.urlsafe_b64decode(body).decode('utf-8'))
         # Join body of texts
-        print('join body')
         body_text = ' '.join(body_text)
 
         # Parse HTML with BeautifulSoup
@@ -300,6 +298,8 @@ def transform_load_raw():
         if(formatted_email['from'] == 'jobs-noreply@linkedin.com'):
             formatted_email.update(extract_linkedin(item))
         formatted_data.append(formatted_email)
+        print('appending to array')
+
 
     df = pd.DataFrame(formatted_data)
     print(df.head())
