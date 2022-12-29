@@ -18,7 +18,8 @@ def google_auth():
     try:
         with open('token.json') as file:
             token = json.load(file)['token']
-    except:
+    except Exception as e:
+        print(e)
         token = get_token()['token']
     return token
 
