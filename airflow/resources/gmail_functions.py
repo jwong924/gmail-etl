@@ -64,7 +64,7 @@ def write_to_gcs(data,bucket_name,blob_name):
         return json.dumps({"statusCode":400,"error":"Error in writting to Google Cloud Storage"+str(e)},indent=4)
 
 # Read GCS blob
-def read_gcs(bucket_name,blob_name):
+def read_gcs_blob(bucket_name,blob_name):
     # Connect to Google Bucket
     os.environ['GOOGLE_APPLICATION_CREDENTIALS']='ServiceKey_GoogleCloud.json'
     try:
@@ -77,6 +77,12 @@ def read_gcs(bucket_name,blob_name):
         print(e)
         result = e
     return result
+
+def list_blobs(bucket_name,prefix):
+    os.environ['GOOGLE_APPLICATION_CREDENTIALS']='ServiceKey_GoogleCloud.json'
+    storage_client = storage.Client()
+    blobs = storage_client.list_blobs(bucket_name,prefix=prefix,delimiter='/')
+    return blobs
 
 # Write data to Google Cloud Storage
 def write_raw(data):
@@ -220,9 +226,12 @@ def extract_linkedin(data):
     return linkedin_data
 
 # Transform to Stage 1
-def transform_load_raw(bucket_name,blob_name):
+def transform_load_raw():
     timestamp=datetime.datetime.now().strftime("%Y-%m-%dT%H%M%S")
-    raw_data = json.loads(read_gcs(bucket_name,blob_name))
+    raw_data = []
+    blobs = list_blobs('gmail-etl','raw/')
+    for item in blobs:
+        raw_data = raw_data + json.loads(read_gcs_blob('gmail-etl',item))
     formatted_data=[]
     for item in raw_data:
         print('Processing item: '+item['id'])
@@ -278,10 +287,11 @@ def transform_load_raw(bucket_name,blob_name):
         result = r
     return json.dumps(result,indent=4)
 
+
 if __name__ == '__main__':
     msgs = extract()
     print(msgs)
     msgs = json.loads(msgs)
     if msgs['statusCode'] == 200:
-        formatted_msgs=transform_load_raw(msgs['bucket'],msgs['blob'])
+        formatted_msgs=transform_load_raw()
         print(formatted_msgs)
