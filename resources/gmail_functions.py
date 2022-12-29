@@ -276,9 +276,9 @@ def transform_load_raw():
             if header['name'].lower() == 'from':
                 sender = header['value']
                 print(sender)
-                sender = sender.replace('<','').replace('>','').split(' ')
+                sender = sender.split('<')
                 i = len(sender) - 1
-                formatted_email.update({'from':sender[i].strip()})
+                formatted_email.update({'from':sender[i].replace('>','').strip()})
         
         # Find and extract all 'Body' data and translate Base64 to utf-8
         body_array = find_json_values('data',json.dumps(item))
